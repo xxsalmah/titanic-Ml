@@ -8,24 +8,62 @@ from sklearn.pipeline import Pipeline
 
 from sklearn.impute import SimpleImputer
 
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder
 
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report
+)
 
 
 # =====================================
 # 1. LOAD DATA
 # =====================================
 
-url = "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv"
-
-df = pd.read_csv(url)
+df = pd.read_csv("train.csv")
 
 
 # =====================================
-# 2. FEATURES AND TARGET
+# 2. FEATURE ENGINEERING
+# =====================================
+
+df["FamilySize"] = (
+    df["SibSp"] +
+    df["Parch"] +
+    1
+)
+
+
+df["IsAlone"] = (
+    df["FamilySize"] == 1
+).astype(int)
+
+
+df["Title"] = (
+    df["Name"]
+    .str.extract(r",\s*([^.]*)\.")[0]
+    .str.strip()
+)
+
+
+common_titles = [
+    "Mr",
+    "Miss",
+    "Mrs",
+    "Master"
+]
+
+
+df["Title"] = df["Title"].where(
+    df["Title"].isin(common_titles),
+    "Rare"
+)
+
+
+# =====================================
+# 3. FEATURES
 # =====================================
 
 features = [
@@ -35,8 +73,12 @@ features = [
     "SibSp",
     "Parch",
     "Fare",
-    "Embarked"
+    "Embarked",
+    "FamilySize",
+    "IsAlone",
+    "Title"
 ]
+
 
 X = df[features]
 
@@ -44,33 +86,24 @@ y = df["Survived"]
 
 
 # =====================================
-# 3. TRAIN / TEST SPLIT
-# =====================================
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y,
-    test_size=0.2,
-    random_state=42,
-    stratify=y
-)
-
-
-# =====================================
-# 4. COLUMN TYPES
+# 4. FEATURE TYPES
 # =====================================
 
 numeric_features = [
+    "Pclass",
     "Age",
-    "Fare",
     "SibSp",
     "Parch",
-    "Pclass"
+    "Fare",
+    "FamilySize",
+    "IsAlone"
 ]
+
 
 categorical_features = [
     "Sex",
-    "Embarked"
+    "Embarked",
+    "Title"
 ]
 
 
@@ -82,10 +115,6 @@ numeric_pipeline = Pipeline([
     (
         "imputer",
         SimpleImputer(strategy="median")
-    ),
-    (
-        "scaler",
-        StandardScaler()
     )
 ])
 
@@ -99,9 +128,12 @@ categorical_pipeline = Pipeline([
         "imputer",
         SimpleImputer(strategy="most_frequent")
     ),
+
     (
         "encoder",
-        OneHotEncoder(handle_unknown="ignore")
+        OneHotEncoder(
+            handle_unknown="ignore"
+        )
     )
 ])
 
@@ -116,6 +148,7 @@ preprocessor = ColumnTransformer([
         numeric_pipeline,
         numeric_features
     ),
+
     (
         "categorical",
         categorical_pipeline,
@@ -133,60 +166,102 @@ pipeline = Pipeline([
         "preprocessor",
         preprocessor
     ),
+
     (
         "classifier",
-        LogisticRegression(max_iter=1000)
+        RandomForestClassifier(
+            random_state=42
+        )
     )
 ])
 
 
 # =====================================
-# 9. PARAMETERS TO TEST
+# 9. TRAIN / TEST SPLIT
 # =====================================
 
-parameters = {
-    "classifier__C": [
-        0.01,
-        0.1,
-        1,
-        10,
-        100
-    ]
-}
-
-
-# =====================================
-# 10. GRID SEARCH
-# =====================================
-
-grid_search = GridSearchCV(
-    pipeline,
-    parameters,
-    cv=5,
-    scoring="accuracy"
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y
 )
 
 
 # =====================================
-# 11. TRAIN
+# 10. PARAMETERS TO SEARCH
 # =====================================
 
-print("Training model...")
+param_grid = {
 
-grid_search.fit(X_train, y_train)
+    "classifier__n_estimators": [
+        100,
+        200,
+        300
+    ],
+
+    "classifier__max_depth": [
+        None,
+        5,
+        10,
+        15
+    ],
+
+    "classifier__min_samples_split": [
+        2,
+        5,
+        10
+    ],
+
+    "classifier__min_samples_leaf": [
+        1,
+        2,
+        4
+    ]
+
+}
 
 
 # =====================================
-# 12. BEST PARAMETERS
+# 11. GRID SEARCH
+# =====================================
+
+grid_search = GridSearchCV(
+    pipeline,
+    param_grid,
+    cv=5,
+    scoring="accuracy",
+    n_jobs=-1,
+    verbose=1
+)
+
+
+# =====================================
+# 12. TRAIN GRID SEARCH
+# =====================================
+
+print("========== STARTING GRID SEARCH ==========")
+
+grid_search.fit(
+    X_train,
+    y_train
+)
+
+
+# =====================================
+# 13. BEST PARAMETERS
 # =====================================
 
 print("\n========== BEST PARAMETERS ==========")
 
-print(grid_search.best_params_)
+print(
+    grid_search.best_params_
+)
 
 
 # =====================================
-# 13. BEST CV SCORE
+# 14. BEST CV SCORE
 # =====================================
 
 print("\n========== BEST CV SCORE ==========")
@@ -200,19 +275,15 @@ print(
 
 
 # =====================================
-# 14. FINAL TEST
+# 15. TEST SET
 # =====================================
 
-best_model = grid_search.best_estimator_
+predictions = grid_search.predict(
+    X_test
+)
 
-predictions = best_model.predict(X_test)
 
-
-# =====================================
-# 15. TEST ACCURACY
-# =====================================
-
-accuracy = accuracy_score(
+test_accuracy = accuracy_score(
     y_test,
     predictions
 )
@@ -221,8 +292,8 @@ accuracy = accuracy_score(
 print("\n========== TEST RESULTS ==========")
 
 print(
-    "Test accuracy:",
-    round(accuracy, 3)
+    "Test Accuracy:",
+    round(test_accuracy, 3)
 )
 
 
@@ -235,6 +306,10 @@ print("\n========== CLASSIFICATION REPORT ==========")
 print(
     classification_report(
         y_test,
-        predictions
+        predictions,
+        target_names=[
+            "Did Not Survive",
+            "Survived"
+        ]
     )
 )

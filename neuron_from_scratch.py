@@ -130,3 +130,5 @@ for value, prediction in zip(
         "→ Prediction:",
         round(prediction, 2)
     )
+
+    .
