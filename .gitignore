@@ -1,6 +1,6 @@
 node_modules/
 dist/
 .env
-*.pkl
-train.csv
-__pycache__/
+.env.local
+.env.*.local
+*.log
