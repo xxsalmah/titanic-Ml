@@ -1,3 +1,8 @@
+
+/* =====================================
+   GLOBAL
+===================================== */
+
 * {
   box-sizing: border-box;
 }
@@ -5,32 +10,53 @@
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
-  background: #f4efe6;
-  color: #3d2b1f;
+  background: #f4efe4;
+  color: #2f3d32;
 }
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+
+/* =====================================
+   APP
+===================================== */
 
 .app {
   min-height: 100vh;
-  padding: 40px 20px;
+  padding: 40px 20px 60px;
+
   background:
     radial-gradient(
       circle at top left,
-      #dce8c8 0,
-      #f4efe6 45%
+      #e7dcc5 0%,
+      transparent 35%
     ),
-    #f4efe6;
+    linear-gradient(
+      135deg,
+      #f4efe4,
+      #ebe4d5
+    );
 }
+
+
+/* =====================================
+   CONTAINER
+===================================== */
 
 .container {
   width: 100%;
-  max-width: 950px;
-  margin: 0 auto;
+  max-width: 1050px;
+  margin: auto;
 }
 
 
-/* =========================
+/* =====================================
    HEADER
-========================= */
+===================================== */
 
 .header {
   text-align: center;
@@ -38,270 +64,715 @@ body {
 }
 
 .header h1 {
-  font-size: 48px;
-  margin: 0 0 10px;
-  color: #4b2e20;
+  margin: 0;
+
+  color: #294735;
+
+  font-size: clamp(
+    32px,
+    5vw,
+    48px
+  );
+
+  font-weight: 800;
+
+  letter-spacing: -1px;
 }
 
 .header p {
-  color: #6b705c;
-  font-size: 18px;
-  margin: 0;
+  margin-top: 12px;
+
+  color: #756b5c;
+
+  font-size: 16px;
 }
 
 
-/* =========================
+/* =====================================
+   STATISTICS
+===================================== */
+
+.stats-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 15px;
+
+  margin-bottom: 25px;
+}
+
+.stat-card {
+  background: rgba(
+    255,
+    253,
+    247,
+    0.9
+  );
+
+  border: 1px solid #ddd3bf;
+
+  border-radius: 18px;
+
+  padding: 20px;
+
+  text-align: center;
+
+  box-shadow:
+    0 8px 25px
+    rgba(
+      63,
+      76,
+      61,
+      0.08
+    );
+}
+
+.stat-card span {
+  display: block;
+
+  color: #807666;
+
+  font-size: 13px;
+
+  margin-bottom: 8px;
+}
+
+.stat-card strong {
+  display: block;
+
+  color: #31583d;
+
+  font-size: 28px;
+}
+
+
+/* =====================================
    MAIN CARD
-========================= */
+===================================== */
 
 .card {
-  background: #fffdf8;
-  border: 2px solid #d8cbb8;
-  border-radius: 20px;
-  padding: 35px;
+  background: #fffdf7;
+
+  border: 1px solid #ded5c3;
+
+  border-radius: 24px;
+
+  padding: 32px;
+
   box-shadow:
-    0 15px 35px rgba(75, 46, 32, 0.12);
+    0 15px 40px
+    rgba(
+      57,
+      71,
+      56,
+      0.1
+    );
 }
 
 
-/* =========================
+/* =====================================
    FORM
-========================= */
+===================================== */
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 22px;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 20px;
 }
 
 .field {
   display: flex;
+
   flex-direction: column;
+
   gap: 8px;
 }
 
 .field label {
+  font-weight: 700;
+
   font-size: 14px;
-  font-weight: bold;
-  color: #5a4030;
+
+  color: #4b554b;
 }
 
 .field input,
 .field select {
   width: 100%;
+
   padding: 13px 14px;
-  border-radius: 10px;
-  border: 1px solid #c9b9a5;
-  background: #faf7f0;
-  color: #3d2b1f;
+
+  border: 1px solid #d7cdbb;
+
+  border-radius: 11px;
+
+  background: #faf7ef;
+
+  color: #334238;
+
   font-size: 15px;
+
+  outline: none;
+
+  transition:
+    border 0.2s,
+    box-shadow 0.2s;
 }
 
 .field input:focus,
 .field select:focus {
-  outline: none;
-  border-color: #6b8e23;
-  box-shadow: 0 0 0 3px rgba(107, 142, 35, 0.12);
+  border-color: #557653;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      85,
+      118,
+      83,
+      0.13
+    );
 }
 
 
-/* =========================
-   BUTTON
-========================= */
+/* =====================================
+   PREDICT BUTTON
+===================================== */
 
-button {
+.card form > button {
   width: 100%;
-  margin-top: 30px;
-  padding: 16px;
+
+  margin-top: 25px;
+
+  padding: 15px;
+
   border: none;
-  border-radius: 10px;
-  background: #557a35;
+
+  border-radius: 12px;
+
+  background: #31583d;
+
   color: white;
-  font-size: 17px;
-  font-weight: bold;
+
+  font-size: 16px;
+
+  font-weight: 700;
+
   cursor: pointer;
-  transition: 0.2s;
+
+  transition:
+    transform 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
 }
 
-button:hover {
-  background: #426329;
+.card form > button:hover {
+  background: #24452f;
+
   transform: translateY(-2px);
+
+  box-shadow:
+    0 8px 20px
+    rgba(
+      49,
+      88,
+      61,
+      0.25
+    );
 }
 
-button:disabled {
-  opacity: 0.6;
+.card form > button:disabled {
+  opacity: 0.65;
+
   cursor: not-allowed;
+
+  transform: none;
 }
 
 
-/* =========================
+/* =====================================
    RESULT
-========================= */
+===================================== */
 
 .result {
-  margin-top: 30px;
-  padding: 30px;
-  border-radius: 16px;
+  margin-top: 25px;
+
+  padding: 25px;
+
+  border-radius: 18px;
+
   text-align: center;
-  background: #e8f0dc;
-  border: 2px solid #b8c99d;
+
+  background:
+    linear-gradient(
+      135deg,
+      #edf3e8,
+      #f5efe3
+    );
+
+  border: 1px solid #cbd8c5;
 }
 
 .result h2 {
-  margin: 0 0 15px;
-  font-size: 30px;
-  color: #4b2e20;
+  margin: 0;
+
+  color: #31583d;
+
+  font-size: 28px;
 }
 
 .result p {
-  margin: 0;
-  color: #6b705c;
+  margin-bottom: 8px;
+
+  color: #756b5c;
 }
 
 .probability {
-  margin-top: 8px;
-  font-size: 32px;
-  font-weight: bold;
-  color: #557a35;
+  font-size: 42px;
+
+  font-weight: 800;
+
+  color: #a0783d;
 }
 
 
-/* =========================
+/* =====================================
    ERROR
-========================= */
+===================================== */
 
 .error {
-  margin-top: 25px;
-  padding: 18px;
-  border-radius: 10px;
-  background: #f7e4df;
-  border: 1px solid #c98f82;
-  color: #713b32;
+  margin-top: 20px;
+
+  padding: 15px;
+
+  border-radius: 12px;
+
+  background: #f7e7df;
+
+  color: #8b4935;
+
   text-align: center;
+
+  border: 1px solid #e2c4b7;
 }
 
 
-/* =========================
+/* =====================================
+   MODEL PERFORMANCE
+===================================== */
+
+.performance-card {
+  margin-top: 30px;
+
+  padding: 28px;
+
+  background: #fffdf7;
+
+  border-radius: 22px;
+
+  border: 1px solid #ded5c3;
+
+  box-shadow:
+    0 12px 30px
+    rgba(
+      57,
+      71,
+      56,
+      0.08
+    );
+}
+
+.performance-header {
+  margin-bottom: 22px;
+}
+
+.performance-header h2 {
+  margin: 0 0 6px;
+
+  color: #294735;
+
+  font-size: 24px;
+}
+
+.performance-header p {
+  margin: 0;
+
+  color: #817767;
+}
+
+.metrics-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 15px;
+}
+
+.metric-box {
+  padding: 20px;
+
+  text-align: center;
+
+  border-radius: 15px;
+
+  background: #edf2e9;
+
+  border: 1px solid #d5dfcf;
+}
+
+.metric-box span {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #756b5c;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.metric-box strong {
+  color: #31583d;
+
+  font-size: 26px;
+}
+
+
+/* =====================================
+   CONFUSION MATRIX
+===================================== */
+
+.confusion-section {
+  margin-top: 30px;
+}
+
+.confusion-section h3 {
+  color: #294735;
+
+  margin-bottom: 15px;
+}
+
+.confusion-matrix {
+  display: grid;
+
+  grid-template-columns:
+    120px
+    1fr
+    1fr;
+
+  max-width: 500px;
+
+  margin: auto;
+
+  overflow: hidden;
+
+  border-radius: 14px;
+
+  border: 1px solid #d8cebc;
+}
+
+.confusion-matrix > div {
+  padding: 16px;
+
+  text-align: center;
+
+  border: 1px solid #ddd4c4;
+}
+
+.matrix-label {
+  background: #f1e8d9;
+
+  color: #5f513f;
+
+  font-weight: 700;
+}
+
+.matrix-value {
+  background: #edf3e9;
+
+  color: #31583d;
+
+  font-size: 21px;
+
+  font-weight: 800;
+}
+
+
+/* =====================================
+   CHART
+===================================== */
+
+.chart-card {
+  margin-top: 30px;
+
+  padding: 28px;
+
+  background: #fffdf7;
+
+  border-radius: 22px;
+
+  border: 1px solid #ded5c3;
+
+  box-shadow:
+    0 12px 30px
+    rgba(
+      57,
+      71,
+      56,
+      0.08
+    );
+}
+
+.chart-header h2 {
+  margin: 0 0 6px;
+
+  color: #294735;
+}
+
+.chart-header p {
+  margin: 0;
+
+  color: #817767;
+}
+
+.chart-container {
+  width: 100%;
+
+  margin-top: 15px;
+}
+
+.empty-chart {
+  padding: 70px 20px;
+
+  text-align: center;
+
+  color: #817767;
+}
+
+
+/* =====================================
    HISTORY
-========================= */
+===================================== */
 
 .history {
-  margin-top: 25px;
-  background: #fffdf8;
-  border: 2px solid #d8cbb8;
-  border-radius: 16px;
-  padding: 25px;
+  margin-top: 30px;
+
+  padding: 28px;
+
+  background: #fffdf7;
+
+  border-radius: 22px;
+
+  border: 1px solid #ded5c3;
+
   box-shadow:
-    0 10px 25px rgba(75, 46, 32, 0.08);
+    0 12px 30px
+    rgba(
+      57,
+      71,
+      56,
+      0.08
+    );
 }
 
 .history-header {
   display: flex;
-  justify-content: space-between;
+
   align-items: center;
-  margin-bottom: 20px;
+
+  justify-content: space-between;
+
+  margin-bottom: 18px;
 }
 
 .history-header h2 {
   margin: 0;
-  color: #4b2e20;
+
+  color: #294735;
 }
 
 .clear-button {
-  width: auto;
-  margin: 0;
   padding: 8px 15px;
-  background: #8b5e3c;
-  font-size: 14px;
+
+  border: 1px solid #c9bba5;
+
+  border-radius: 9px;
+
+  background: #f5eee2;
+
+  color: #74563e;
+
+  font-weight: 700;
+
+  cursor: pointer;
 }
 
 .clear-button:hover {
-  background: #70482e;
+  background: #eadfce;
 }
 
 .history-list {
   display: flex;
+
   flex-direction: column;
+
   gap: 10px;
 }
 
 .history-item {
   display: flex;
-  justify-content: space-between;
+
   align-items: center;
-  padding: 16px;
-  background: #f5f0e7;
-  border-radius: 10px;
-  border: 1px solid #d8cbb8;
+
+  justify-content: space-between;
+
+  padding: 15px;
+
+  border-radius: 12px;
+
+  background: #f7f3e9;
+
+  border: 1px solid #e4dccd;
 }
 
 .history-item strong {
-  font-size: 16px;
-  color: #4b2e20;
+  color: #31583d;
 }
 
 .history-item p {
   margin: 5px 0 0;
-  color: #77705f;
-  font-size: 14px;
+
+  color: #817767;
+
+  font-size: 13px;
 }
 
-.history-item span {
-  font-weight: bold;
-  color: #557a35;
+.history-item > span {
+  color: #a0783d;
+
+  font-weight: 800;
 }
 
 
-/* =========================
-   INFORMATION BOXES
-========================= */
+/* =====================================
+   INFORMATION
+===================================== */
 
 .info {
-  margin-top: 25px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
   gap: 15px;
+
+  margin-top: 30px;
 }
 
 .info-box {
   padding: 20px;
-  background: #6b8e5a;
-  border: 1px solid #557545;
-  border-radius: 12px;
+
   text-align: center;
-  color: white;
+
+  background: #fffdf7;
+
+  border: 1px solid #ded5c3;
+
+  border-radius: 17px;
 }
 
 .info-box h3 {
   margin: 0 0 8px;
+
+  color: #31583d;
 }
 
 .info-box p {
   margin: 0;
-  color: #edf4e7;
+
+  color: #817767;
+
   font-size: 14px;
 }
 
 
-/* =========================
-   MOBILE
-========================= */
+/* =====================================
+   RESPONSIVE
+===================================== */
 
-@media (max-width: 700px) {
+@media (max-width: 800px) {
 
-  .header h1 {
-    font-size: 34px;
+  .stats-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
   }
 
-  .card {
-    padding: 22px;
+  .metrics-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .app {
+    padding:
+      25px
+      12px
+      40px;
+  }
+
+  .card,
+  .performance-card,
+  .chart-card,
+  .history {
+    padding: 20px;
   }
 
   .form-grid {
     grid-template-columns: 1fr;
   }
 
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .info {
     grid-template-columns: 1fr;
   }
+
+  .header h1 {
+    font-size: 32px;
+  }
+
 }
+
+
+@media (max-width: 400px) {
+
+  .stats-grid,
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .confusion-matrix {
+    grid-template-columns:
+      85px
+      1fr
+      1fr;
+  }
+
+}
+
