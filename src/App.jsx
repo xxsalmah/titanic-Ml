@@ -1,4 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import "./App.css";
 
 function App() {
@@ -16,8 +24,47 @@ function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // NEW: prediction history
   const [history, setHistory] = useState([]);
+
+  const [stats, setStats] = useState({
+    total_predictions: 0,
+    survived: 0,
+    did_not_survive: 0,
+    average_probability: 0,
+    survival_rate: 0,
+  });
+
+  const [metrics, setMetrics] = useState({
+    accuracy: 0,
+    precision: 0,
+    recall: 0,
+    f1_score: 0,
+    confusion_matrix: [
+      [0, 0],
+      [0, 0],
+    ],
+  });
+
+
+  // =====================================
+  // CHART DATA
+  // =====================================
+
+  const chartData = [
+    {
+      name: "Survived",
+      value: stats.survived,
+    },
+    {
+      name: "Did Not Survive",
+      value: stats.did_not_survive,
+    },
+  ];
+
+
+  // =====================================
+  // HANDLE FORM CHANGES
+  // =====================================
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -28,6 +75,107 @@ function App() {
     }));
   };
 
+
+  // =====================================
+  // LOAD HISTORY
+  // =====================================
+
+  const loadHistory = async () => {
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:5000/history"
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to load history");
+      }
+
+      const data = await response.json();
+
+      setHistory(data);
+
+    } catch (error) {
+      console.error(
+        "Error loading history:",
+        error
+      );
+    }
+  };
+
+
+  // =====================================
+  // LOAD STATISTICS
+  // =====================================
+
+  const loadStats = async () => {
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:5000/stats"
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Failed to load statistics"
+        );
+      }
+
+      const data = await response.json();
+
+      setStats(data);
+
+    } catch (error) {
+      console.error(
+        "Error loading statistics:",
+        error
+      );
+    }
+  };
+
+
+  // =====================================
+  // LOAD MODEL METRICS
+  // =====================================
+
+  const loadMetrics = async () => {
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:5000/metrics"
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Failed to load metrics"
+        );
+      }
+
+      const data = await response.json();
+
+      setMetrics(data);
+
+    } catch (error) {
+      console.error(
+        "Error loading metrics:",
+        error
+      );
+    }
+  };
+
+
+  // =====================================
+  // LOAD DATA WHEN PAGE OPENS
+  // =====================================
+
+  useEffect(() => {
+    loadHistory();
+    loadStats();
+    loadMetrics();
+  }, []);
+
+
+  // =====================================
+  // MAKE PREDICTION
+  // =====================================
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -35,13 +183,16 @@ function App() {
     setResult(null);
 
     try {
+
       const response = await fetch(
         "http://127.0.0.1:5000/predict",
         {
           method: "POST",
+
           headers: {
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify({
             Pclass: Number(form.Pclass),
             Sex: form.Sex,
@@ -55,30 +206,30 @@ function App() {
         }
       );
 
+
       if (!response.ok) {
-        throw new Error("Prediction request failed.");
+        throw new Error(
+          "Prediction request failed."
+        );
       }
 
-      const data = await response.json();
+
+      const data =
+        await response.json();
+
 
       setResult(data);
 
-      // NEW: add prediction to history
-      const newPrediction = {
-        id: Date.now(),
-        class: form.Pclass,
-        sex: form.Sex,
-        age: form.Age,
-        prediction: data.prediction,
-        probability: data.survival_probability,
-      };
 
-      setHistory((previous) => [
-        newPrediction,
-        ...previous,
-      ]);
+      // Reload database information
+
+      await loadHistory();
+
+      await loadStats();
+
 
     } catch (error) {
+
       console.error(error);
 
       setResult({
@@ -87,21 +238,73 @@ function App() {
       });
 
     } finally {
+
       setLoading(false);
+
     }
   };
 
-  // Clear history
-  const clearHistory = () => {
-    setHistory([]);
+
+  // =====================================
+  // CLEAR HISTORY
+  // =====================================
+
+  const clearHistory = async () => {
+
+    try {
+
+      const response = await fetch(
+        "http://127.0.0.1:5000/history",
+        {
+          method: "DELETE",
+        }
+      );
+
+
+      if (!response.ok) {
+        throw new Error(
+          "Failed to clear history"
+        );
+      }
+
+
+      setHistory([]);
+
+      setStats({
+        total_predictions: 0,
+        survived: 0,
+        did_not_survive: 0,
+        average_probability: 0,
+        survival_rate: 0,
+      });
+
+      setResult(null);
+
+
+    } catch (error) {
+
+      console.error(
+        "Error clearing history:",
+        error
+      );
+
+    }
   };
+
+
+  // =====================================
+  // UI
+  // =====================================
 
   return (
     <div className="app">
 
       <div className="container">
 
-        {/* HEADER */}
+
+        {/* =================================
+            HEADER
+        ================================= */}
 
         <div className="header">
 
@@ -110,14 +313,76 @@ function App() {
           </h1>
 
           <p>
-            Machine learning prediction powered by
-            Random Forest
+            Machine learning prediction powered
+            by Random Forest
           </p>
 
         </div>
 
 
-        {/* FORM */}
+        {/* =================================
+            STATISTICS
+        ================================= */}
+
+        <div className="stats-grid">
+
+          <div className="stat-card">
+
+            <span>
+              Total Predictions
+            </span>
+
+            <strong>
+              {stats.total_predictions}
+            </strong>
+
+          </div>
+
+
+          <div className="stat-card">
+
+            <span>
+              Survived
+            </span>
+
+            <strong>
+              {stats.survived}
+            </strong>
+
+          </div>
+
+
+          <div className="stat-card">
+
+            <span>
+              Did Not Survive
+            </span>
+
+            <strong>
+              {stats.did_not_survive}
+            </strong>
+
+          </div>
+
+
+          <div className="stat-card">
+
+            <span>
+              Survival Rate
+            </span>
+
+            <strong>
+              {stats.survival_rate}%
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        {/* =================================
+            PREDICTION FORM
+        ================================= */}
 
         <div className="card">
 
@@ -125,7 +390,11 @@ function App() {
 
             <div className="form-grid">
 
+
+              {/* PASSENGER CLASS */}
+
               <div className="field">
+
                 <label>
                   Passenger Class
                 </label>
@@ -135,6 +404,7 @@ function App() {
                   value={form.Pclass}
                   onChange={handleChange}
                 >
+
                   <option value="1">
                     1st Class
                   </option>
@@ -146,11 +416,16 @@ function App() {
                   <option value="3">
                     3rd Class
                   </option>
+
                 </select>
+
               </div>
 
 
+              {/* SEX */}
+
               <div className="field">
+
                 <label>
                   Sex
                 </label>
@@ -160,6 +435,7 @@ function App() {
                   value={form.Sex}
                   onChange={handleChange}
                 >
+
                   <option value="male">
                     Male
                   </option>
@@ -167,11 +443,16 @@ function App() {
                   <option value="female">
                     Female
                   </option>
+
                 </select>
+
               </div>
 
 
+              {/* AGE */}
+
               <div className="field">
+
                 <label>
                   Age
                 </label>
@@ -185,10 +466,14 @@ function App() {
                   min="0"
                   required
                 />
+
               </div>
 
 
+              {/* SIBSP */}
+
               <div className="field">
+
                 <label>
                   Siblings / Spouses
                 </label>
@@ -200,10 +485,14 @@ function App() {
                   onChange={handleChange}
                   min="0"
                 />
+
               </div>
 
 
+              {/* PARCH */}
+
               <div className="field">
+
                 <label>
                   Parents / Children
                 </label>
@@ -215,10 +504,14 @@ function App() {
                   onChange={handleChange}
                   min="0"
                 />
+
               </div>
 
 
+              {/* FARE */}
+
               <div className="field">
+
                 <label>
                   Fare
                 </label>
@@ -233,10 +526,14 @@ function App() {
                   step="0.01"
                   required
                 />
+
               </div>
 
 
+              {/* EMBARKED */}
+
               <div className="field">
+
                 <label>
                   Embarkation Port
                 </label>
@@ -246,6 +543,7 @@ function App() {
                   value={form.Embarked}
                   onChange={handleChange}
                 >
+
                   <option value="S">
                     Southampton
                   </option>
@@ -257,11 +555,16 @@ function App() {
                   <option value="Q">
                     Queenstown
                   </option>
+
                 </select>
+
               </div>
 
 
+              {/* TITLE */}
+
               <div className="field">
+
                 <label>
                   Title
                 </label>
@@ -271,6 +574,7 @@ function App() {
                   value={form.Title}
                   onChange={handleChange}
                 >
+
                   <option value="Mr">
                     Mr
                   </option>
@@ -290,25 +594,33 @@ function App() {
                   <option value="Rare">
                     Rare
                   </option>
+
                 </select>
+
               </div>
 
             </div>
 
 
+            {/* PREDICT BUTTON */}
+
             <button
               type="submit"
               disabled={loading}
             >
+
               {loading
                 ? "Making Prediction..."
                 : "Predict Survival"}
+
             </button>
 
           </form>
 
 
-          {/* RESULT */}
+          {/* =================================
+              RESULT
+          ================================= */}
 
           {result && !result.error && (
 
@@ -323,7 +635,9 @@ function App() {
               </p>
 
               <div className="probability">
+
                 {result.survival_probability}%
+
               </div>
 
             </div>
@@ -336,7 +650,9 @@ function App() {
           {result?.error && (
 
             <div className="error">
+
               {result.error}
+
             </div>
 
           )}
@@ -344,7 +660,214 @@ function App() {
         </div>
 
 
-        {/* HISTORY */}
+        {/* =================================
+            MODEL PERFORMANCE
+        ================================= */}
+
+        <div className="performance-card">
+
+          <div className="performance-header">
+
+            <h2>
+              🧠 Model Performance
+            </h2>
+
+            <p>
+              Random Forest evaluation metrics
+            </p>
+
+          </div>
+
+
+          <div className="metrics-grid">
+
+            <div className="metric-box">
+
+              <span>
+                Accuracy
+              </span>
+
+              <strong>
+                {metrics.accuracy}%
+              </strong>
+
+            </div>
+
+
+            <div className="metric-box">
+
+              <span>
+                Precision
+              </span>
+
+              <strong>
+                {metrics.precision}%
+              </strong>
+
+            </div>
+
+
+            <div className="metric-box">
+
+              <span>
+                Recall
+              </span>
+
+              <strong>
+                {metrics.recall}%
+              </strong>
+
+            </div>
+
+
+            <div className="metric-box">
+
+              <span>
+                F1 Score
+              </span>
+
+              <strong>
+                {metrics.f1_score}%
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          {/* CONFUSION MATRIX */}
+
+          <div className="confusion-section">
+
+            <h3>
+              Confusion Matrix
+            </h3>
+
+            <div className="confusion-matrix">
+
+              <div></div>
+
+              <div className="matrix-label">
+                Predicted 0
+              </div>
+
+              <div className="matrix-label">
+                Predicted 1
+              </div>
+
+
+              <div className="matrix-label">
+                Actual 0
+              </div>
+
+              <div className="matrix-value">
+                {metrics.confusion_matrix[0][0]}
+              </div>
+
+              <div className="matrix-value">
+                {metrics.confusion_matrix[0][1]}
+              </div>
+
+
+              <div className="matrix-label">
+                Actual 1
+              </div>
+
+              <div className="matrix-value">
+                {metrics.confusion_matrix[1][0]}
+              </div>
+
+              <div className="matrix-value">
+                {metrics.confusion_matrix[1][1]}
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        {/* =================================
+            SURVIVAL CHART
+        ================================= */}
+
+        <div className="chart-card">
+
+          <div className="chart-header">
+
+            <h2>
+              📈 Survival Distribution
+            </h2>
+
+            <p>
+              Breakdown of prediction results
+            </p>
+
+          </div>
+
+
+          {stats.total_predictions > 0 ? (
+
+            <div className="chart-container">
+
+              <ResponsiveContainer
+                width="100%"
+                height={320}
+              >
+
+                <PieChart>
+
+                  <Pie
+                    data={chartData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={105}
+                    dataKey="value"
+                    label={({
+                      name,
+                      percent,
+                    }) =>
+                      `${name} ${(percent * 100).toFixed(0)}%`
+                    }
+                  >
+
+                    <Cell fill="#557653" />
+
+                    <Cell fill="#8a6652" />
+
+                  </Pie>
+
+
+                  <Tooltip />
+
+                  <Legend />
+
+                </PieChart>
+
+              </ResponsiveContainer>
+
+            </div>
+
+          ) : (
+
+            <div className="empty-chart">
+
+              <p>
+                Make a prediction to see your
+                chart.
+              </p>
+
+            </div>
+
+          )}
+
+        </div>
+
+
+        {/* =================================
+            HISTORY
+        ================================= */}
 
         {history.length > 0 && (
 
@@ -357,6 +880,7 @@ function App() {
               </h2>
 
               <button
+                type="button"
                 className="clear-button"
                 onClick={clearHistory}
               >
@@ -376,15 +900,17 @@ function App() {
                 >
 
                   <div>
+
                     <strong>
                       {item.prediction}
                     </strong>
 
                     <p>
-                      {item.sex} ·{" "}
-                      {item.age} years ·{" "}
-                      Class {item.class}
+                      {item.Sex} ·{" "}
+                      {item.Age} years ·{" "}
+                      Class {item.Pclass}
                     </p>
+
                   </div>
 
                   <span>
@@ -402,26 +928,52 @@ function App() {
         )}
 
 
-        {/* INFORMATION */}
+        {/* =================================
+            INFORMATION
+        ================================= */}
 
         <div className="info">
 
           <div className="info-box">
-            <h3>🤖 Model</h3>
-            <p>Random Forest</p>
+
+            <h3>
+              🤖 Model
+            </h3>
+
+            <p>
+              Random Forest
+            </p>
+
           </div>
 
-          <div className="info-box">
-            <h3>📊 Features</h3>
-            <p>Passenger & family data</p>
-          </div>
 
           <div className="info-box">
-            <h3>🧠 Pipeline</h3>
-            <p>Preprocessing + ML</p>
+
+            <h3>
+              📊 Features
+            </h3>
+
+            <p>
+              Passenger & family data
+            </p>
+
+          </div>
+
+
+          <div className="info-box">
+
+            <h3>
+              🧠 Pipeline
+            </h3>
+
+            <p>
+              Preprocessing + ML
+            </p>
+
           </div>
 
         </div>
+
 
       </div>
 
@@ -430,3 +982,4 @@ function App() {
 }
 
 export default App;
+
