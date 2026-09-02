@@ -83,7 +83,7 @@ function App() {
   const loadHistory = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:5000/history"
+        "https://titanic-survival-api-xf52.onrender.com/history"
       );
 
       if (!response.ok) {
@@ -110,7 +110,7 @@ function App() {
   const loadStats = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:5000/stats"
+        "https://titanic-survival-api-xf52.onrender.com/stats"
       );
 
       if (!response.ok) {
@@ -139,7 +139,7 @@ function App() {
   const loadMetrics = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:5000/metrics"
+        "https://titanic-survival-api-xf52.onrender.com/metrics"
       );
 
       if (!response.ok) {
@@ -185,7 +185,7 @@ function App() {
     try {
 
       const response = await fetch(
-        "http://127.0.0.1:5000/predict",
+        "https://titanic-survival-api-xf52.onrender.com/predict",
         {
           method: "POST",
 
@@ -254,7 +254,7 @@ function App() {
     try {
 
       const response = await fetch(
-        "http://127.0.0.1:5000/history",
+        "https://titanic-survival-api-xf52.onrender.com/history",
         {
           method: "DELETE",
         }
